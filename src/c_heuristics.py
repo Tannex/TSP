@@ -8,10 +8,78 @@ Created on Thu Feb 15 18:38:45 2018
 
 from data import *
 import itertools
+import collections
+import functools
 
 from solutions import *
 
+def double_ended_nn_tsp(cities, start=None):
+    if start is None:
+        start = first(cities)
+    tour = collections.deque([start])
+    unvisited = set(cities - {start})
+    while unvisited:
+        closest_head = nearest_neighbor(tour[0], unvisited)
+        closest_tail = nearest_neighbor(tour[-1], unvisited)
+        if distance(tour[0], closest_head) < distance(tour[-1], closest_tail):
+            tour.appendleft(closest_head)
+            unvisited.remove(closest_head)
+        else:
+            tour.append(closest_tail)
+            unvisited.remove(closest_tail)
+    return tour
 
+def nearest_addition_tsp(cities, start = None):
+    if start is None:
+        random.seed(len(cities) * 42)
+        start = random.choice(list(cities))
+    tour = [start, nearest_neighbor(start, cities - {start})]
+    unvisited = set(cities - {tour[0], tour[1]})
+    while unvisited:
+        (addition, cost) = min(
+            [
+                nearest_neighbor_with_dist(city, unvisited)
+                for city in tour
+            ],
+            key=lambda t: t[1]
+        )
+        unvisited.remove(addition)
+        tour.insert(tour.index(get_best_insert_after(addition, tour))+1, addition)
+    return tour
+
+def farthest_addition_tsp(cities, start = None):
+    if start is None:
+        random.seed(len(cities) * 42)
+        start = random.choice(list(cities))
+    tour = [start, farthest_neighbor(start, cities - {start})]
+    unvisited = set(cities - {tour[0], tour[1]})
+    while unvisited:
+        # Select farthest edge
+        (addition, (nn, cost)) = max(
+            [
+                (
+                    city,
+                    nearest_neighbor_with_dist(city, tour)
+                ) for city in unvisited
+            ],
+            key=lambda t: t[1][1]
+        )
+        # Insert into tour such that cost is minimized
+        unvisited.remove(addition)
+        tour.insert(tour.index(get_best_insert_after(addition, tour))+1, addition)
+    return tour
+
+def get_best_insert_after(city, tour):
+    safe = tour.copy()
+    safe.append(tour[0])
+    insert_after = None
+    best_insertion = float("inf")
+    for fr, to in zip(safe, safe[1:]):
+        diff = distance(fr, city) + distance(city, to) - distance(fr, to)
+        if diff < best_insertion:
+            best_insertion = diff
+            insert_after = fr
+    return insert_after
 
 def nn_tsp(cities, start=None):
     """Start the tour at the first city; at each step extend the tour 
@@ -26,17 +94,19 @@ def nn_tsp(cities, start=None):
         unvisited.remove(C)
     return tour
 
-
+# @functools.lru_cache(None)
 def nearest_neighbor(A, cities):
-    "Find the city in cities that is nearest to city A."
+    """Find the city in cities that is nearest to city A."""
     return min(cities, key=lambda c: distance(c, A))
 
+def nearest_neighbor_with_dist(A, cities):
+    return min([(city, distance(A, city)) for city in cities], key=lambda t: t[1])
 
+def farthest_neighbor(A, cities):
+    return max(cities, key=lambda c: distance(c, A))
 
-
-
-
-
+def farthest_neighbor_with_dist(A, cities):
+    return max([(city, distance(A, city)) for city in cities], key=lambda t: t[1])
 
 def greedy_tsp(cities):
     """Go through edges, shortest first. Use edge to join segments if possible."""
@@ -49,20 +119,20 @@ def greedy_tsp(cities):
             
             
 def shortest_edges_first(cities):
-    "Return all edges between distinct cities, sorted shortest first."
+    """Return all edges between distinct cities, sorted shortest first."""
     edges = [(A, B) for A in cities for B in cities if id(A) < id(B)]
     return sorted(edges, key=lambda edge: distance(*edge))
 
 
 def join_endpoints(endpoints, A, B):
-    "Join B's segment onto the end of A's and return the segment. Maintain endpoints dict."
-    Asegment, Bsegment = endpoints[A], endpoints[B]
-    if Asegment[-1] is not A: Asegment.reverse()
-    if Bsegment[0] is not B: Bsegment.reverse()
-    Asegment.extend(Bsegment)
+    """Join B's segment onto the end of A's and return the segment. Maintain endpoints dict."""
+    a_segment, b_segment = endpoints[A], endpoints[B]
+    if a_segment[-1] is not A: a_segment.reverse()
+    if b_segment[0] is not B: b_segment.reverse()
+    a_segment.extend(b_segment)
     del endpoints[A], endpoints[B] # A and B are no longer endpoints
-    endpoints[Asegment[0]] = endpoints[Asegment[-1]] = Asegment
-    return Asegment
+    endpoints[a_segment[0]] = endpoints[a_segment[-1]] = a_segment
+    return a_segment
 
 
 

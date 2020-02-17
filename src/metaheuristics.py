@@ -16,11 +16,14 @@ from localsearch import *
 
 
 def repeated_nn_tsp(cities, repetitions=100):
-    "Repeat the nn_tsp algorithm starting from specified number of cities; return the shortest tour."
+    """Repeat the nn_tsp algorithm starting from specified number of cities; return the shortest tour."""
     return shortest_tour(nn_tsp(cities, start) for start in sample(cities, repetitions))
 
+def repeated_double_ended_nn_tsp(cities, repetitions=100):
+    return shortest_tour(double_ended_nn_tsp(cities, start) for start in sample(cities, repetitions))
+
 def sample(population, k, seed=42):
-    "Return a list of k elements sampled from population. Set random.seed with seed."
+    """Return a list of k elements sampled from population. Set random.seed with seed."""
     if k is None or k > len(population): 
         return population
     random.seed(len(population) * k * seed)
@@ -29,8 +32,8 @@ def sample(population, k, seed=42):
 
 
 
-def repeated_altered_nn_tsp(cities, repetitions=20): 
-    "Use alteration to improve each repetition of nearest neighbors."
+def repeated_altered_nn_tsp(cities, repetitions=20):
+    """Use alteration to improve each repetition of nearest neighbors."""
     return shortest_tour(alter_tour(nn_tsp(cities, start)) 
                          for start in sample(cities, repetitions))
 
