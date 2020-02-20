@@ -6,13 +6,14 @@ Created on Thu Feb 15 18:50:19 2018
 @author: marco
 """
 
+from __future__ import absolute_import, print_function
 import functools
 from solutions import *
 
 
 
 def hk_tsp(cities):
-    """The Held-Karpshortest tour of this set of cities.
+    """The Held-Karp shortest tour of this set of cities.
     For each end city C, find the shortest segment from A (the start) to C.
     Out of all these shortest segments, pick the one that is the shortest tour."""
     A = first(cities)
@@ -28,7 +29,37 @@ def shortest_segment(A, Bs, C):
     else:
         segments = [shortest_segment(A, Bs - {B}, B) + [C] for B in Bs]
         return min(segments, key=segment_length)
-            
+
+def hk_heuristic_tsp(cities, k=2):
+    """The Held-Karp heuristic shortest tour of this set of cities.
+    For each end city C, find the shortest segment from A (the start) to C.
+    Out of all these shortest segments, pick the one that is the shortest tour."""
+    A = first(cities)
+    return shortest_tour(shortest_segment_heuristic(A, cities - {A, C}, C, k)
+                         for C in cities if C is not A)
+
+@functools.lru_cache(None)
+def shortest_segment_heuristic(A, Bs, C, k):
+    """The shortest segment starting at A, going through k Bs closest to C, and ending at C."""
+    # print(A,Bs,C)
+    if not Bs:
+        return [A, C]
+    else:
+        my_bs = list(  # TODO: implement and use k-d Tree
+            map(
+                lambda t: t[0],
+                sorted(
+                    [
+                        (b, distance(C, b))
+                        for b in Bs
+                    ], key=lambda t: t[1]
+                )[:k]
+            )
+        )
+        segments = [shortest_segment_heuristic(A, Bs - {B}, B, k) + [C] for B in my_bs]
+        return min(segments, key=segment_length)
+
+
 def segment_length(segment):
     """The total of distances between each pair of consecutive cities in the segment."""
     # Same as tour_length, but without distance(tour[0], tour[-1])

@@ -69,6 +69,28 @@ def farthest_addition_tsp(cities, start = None):
         tour.insert(tour.index(get_best_insert_after(addition, tour))+1, addition)
     return tour
 
+def random_addition_tsp(cities, start = None):
+    if start is None:
+        random.seed(len(cities) * 42)
+        start = random.choice(list(cities))
+    tour = [start, farthest_neighbor(start, cities - {start})]
+    unvisited = set(cities - {tour[0], tour[1]})
+    while unvisited:
+        # Select farthest edge
+        (addition, (nn, cost)) = max(
+            [
+                (
+                    city,
+                    nearest_neighbor_with_dist(city, tour)
+                ) for city in unvisited
+            ],
+            key=lambda t: t[1][1]
+        )
+        # Insert into tour such that cost is minimized
+        unvisited.remove(addition)
+        tour.insert(tour.index(get_best_insert_after(addition, tour))+1, addition)
+    return tour
+
 def get_best_insert_after(city, tour):
     safe = tour.copy()
     safe.append(tour[0])
