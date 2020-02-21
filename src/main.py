@@ -73,9 +73,10 @@ algorithms = [
     # repeat_50_de_nn_tsp,
     # repeat_100_nn_tsp,
     # repeat_100_de_nn_tsp,
-    nearest_addition_tsp,
-    farthest_addition_tsp,
-    hk_heuristic_tsp
+    nearset_insertion_tsp,
+    farthest_insertion_tsp,
+    altered_farthest_insertion,
+    altered_best_farthest_insertion
 ]
 
 # Held-Karp Algorithm

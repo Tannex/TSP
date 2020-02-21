@@ -38,8 +38,6 @@ def benchmarks(tsp_algorithms, maps=Maps(30, 60)):
               .format(tsp.__name__, mean(lengths), stdev(lengths), min(lengths), max(lengths),
                       average_time, len(maps), len(maps[0])))
         all_lengths.append(lengths)
-        if tsp.__name__ == "farthest_addition_tsp" or tsp.__name__ == "nearest_addition_tsp":
-            plot_tsp(tsp, maps[0])
     fig, axs = plt.subplots()
     axs.boxplot(all_lengths, 0, 'ro', 0)
     axs.set_title("Benchmarks")

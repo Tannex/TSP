@@ -13,57 +13,57 @@ from solutions import *
 from c_heuristics import *
 
 
-def reverse_segment_if_better(tour, i, j):
-    """If reversing tour[i:j] would make the tour shorter, then do it."""
-    # Given tour [...A-B...C-D...], consider reversing B...C to get [...A-C...B-D...]
-    A, B, C, D = tour[i-1], tour[i], tour[j-1], tour[j % len(tour)]
-    # Are old edges (AB + CD) longer than new ones (AC + BD)? If so, reverse segment.
+def compute_delta(tour, i, j):  # TODO: verify indices
+    A, B, C, D = tour[i], tour[i+1], tour[j], tour[(j+1) % len(tour)] # Reversed segment is i+1 -> j
     current_cost = distance(A, B) + distance(C, D)
     reverse_cost = distance(A, C) + distance(B, D)
-    delta = reverse_cost - current_cost
-    if current_cost > reverse_cost:
-        tour[i:j] = reversed(tour[i:j])
-    return delta
+    return reverse_cost - current_cost
+
+def commit_2_opt_change(tour, i, j):
+    tour[i+1:j+1] = reversed(tour[i+1:j+1])  # Left inclusive right exclusive; A = i;B = i+1; C = j; D = j+1 reverse segment BC inclusive
 
 def two_opt_first_improvement(tour):
     """Try to alter tour for the better by reversing segments. First improvement"""
-    original_length = tour_length(tour)
-    for (start, end) in all_segments(len(tour)):
-        delta = reverse_segment_if_better(tour, start, end)
-        #if delta < 0:
-        #    plot_tour(tour)
-        #    print(start,end,original_length+delta)
-
-    # If we made an improvement, then try again; else stop and return tour.
-    if tour_length(tour) < original_length:
-        return two_opt_first_improvement(tour)
+    improvement = True
+    while improvement:
+        improvement = False
+        for (start, end) in all_segments(len(tour)):
+            delta = compute_delta(tour, start, end)
+            if delta < 0:
+                commit_2_opt_change(tour, start, end)
+                improvement = True
+                # plot_tour(tour)
+                # print(start,end,delta)
     return tour
 
 def two_opt_best_improvement(tour):
     """Try to alter tour for the better by reversing segments. Best improvement"""
-    best_delta = 0  # Only accept delta < 0.
-    best_segment = None
-    # Get best segment if any immediate 2-exchange improvement exists
-    for (i, j) in all_segments(len(tour)):
-        A, B, C, D = tour[i-1], tour[i], tour[j-1], tour[j % len(tour)]
-        current_cost = distance(A, B) + distance(C, D)
-        updated_cost = distance(A, C) + distance(B, D)
-        delta = updated_cost - current_cost
-        if delta < best_delta:
-            best_delta = delta
-            best_segment = (i, j)
-    if best_delta < 0:
-        start, end = best_segment
-        tour[start:end] = reversed(tour[start:end])
-        return two_opt_best_improvement(tour)
+    improvement = True
+    while improvement:
+        improvement = False
+        best_delta = 0  # Only accept delta < 0.
+        best_segment = None
+        # Get best segment if any immediate 2-exchange improvement exists
+        for (i, j) in all_segments(len(tour)):
+            delta = compute_delta(tour, i, j)
+            if delta < best_delta:
+                best_delta = delta
+                best_segment = (i, j)
+        if best_delta < 0:
+            start, end = best_segment
+            commit_2_opt_change(tour, start, end)
+            # print(start,end,delta)
+            improvement = True
     return tour
 
 
 def all_segments(N):
     """Return (start, end) pairs of indexes that form segments of tour of length N."""
-    return [(start, start + length)
-            for length in range(N, 2-1, -1)
-            for start in range(N - length + 1)]
+    return (
+        (start, end) 
+        for (start, end) in itertools.combinations(range(N), 2)
+        if end > start+1
+        )
 
 def altered_nn_tsp(cities):
     """Run nearest neighbor TSP algorithm, and alter the results by reversing segments."""
@@ -87,3 +87,9 @@ def altered_best_greedy_tsp(cities):
 def altered_best_canonical(cities):
     tour = [c for c in cities]
     return two_opt_best_improvement(tour)
+
+def altered_farthest_insertion(cities):
+    return two_opt_first_improvement(farthest_insertion_tsp(cities))
+
+def altered_best_farthest_insertion(cities):
+    return two_opt_best_improvement(farthest_insertion_tsp(cities))
