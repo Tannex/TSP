@@ -63,25 +63,25 @@ def altered_mst_tsp(cities): return alter_tour(mst_tsp(cities))
 
 # Nearest neighbor algorithms
 algorithms = [
-    nn_tsp,
-    double_ended_nn_tsp,
-    repeat_10_nn_tsp,
-    repeat_10_de_nn_tsp,
-    repeat_25_nn_tsp,
-    repeat_25_de_nn_tsp,
-    # repeat_50_nn_tsp,
-    # repeat_50_de_nn_tsp,
-    # repeat_100_nn_tsp,
-    # repeat_100_de_nn_tsp,
-    nearest_addition_tsp,
-    farthest_addition_tsp,
-    hk_heuristic_tsp
+    # nn_tsp,
+    # double_ended_nn_tsp,
+    # repeat_10_nn_tsp,
+    # repeat_10_de_nn_tsp,
+    # repeat_25_nn_tsp,
+    # repeat_25_de_nn_tsp,
+    # # repeat_50_nn_tsp,
+    # # repeat_50_de_nn_tsp,
+    # # repeat_100_nn_tsp,
+    # # repeat_100_de_nn_tsp,
+    # nearest_addition_tsp,
+    # farthest_addition_tsp,
+    altered_canonical,
+    three_opt_canonical
 ]
 
 # Held-Karp Algorithm
 # algorithms = [hk_tsp]
-
-benchmarks(algorithms, Maps(100, 50))
+benchmarks(algorithms, Maps(20, 50))
 
 
 # algorithms = [altered_nn_tsp, altered_greedy_tsp, repeated_altered_nn_tsp]
