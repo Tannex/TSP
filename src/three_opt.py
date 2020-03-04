@@ -131,14 +131,9 @@ def generate_ijk(length, randomized=True):  # For now, check all valid i,j,k com
             for j in range(i + 2, length):
                 for k in range(j+2, length):
                     yield i, j, k
-    else:  # Not perfect, but does introduce some level of randomness
-        i_sample_space = list(range(0, length - 4))
-        while i_sample_space:
-            i = i_sample_space.pop(random.randrange(0, len(i_sample_space)))
-            j_sample_space = list(range(i+2, length - 2))
-            while j_sample_space:
-                j = j_sample_space.pop(random.randrange(0, len(j_sample_space)))
-                k_sample_space = list(range(j+2, length))
-                while k_sample_space:
-                    k = k_sample_space.pop(random.randrange(0, len(k_sample_space)))
-                    yield i, j, k
+    else:  # leads to more ijk values being checked (since the mask isn't ordered)
+        mask = np.random.permutation(length)
+        for (i, j, k) in itertools.permutations(mask, 3):
+            if i + 1 < j < k - 1:
+                print(i, j, k)
+                yield i, j, k
